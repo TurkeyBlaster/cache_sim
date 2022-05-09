@@ -24,7 +24,7 @@
 //         }                                                                      \
 //     }
 
-void parse_args(Cache *cache);
+void parse_args(CacheOptions *cache_options);
 void validate_arg(char* char_member, const char options[], char limit, char* prompt, char* error_msg);
 
 #endif // HANDLE_ARGS_H

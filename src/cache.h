@@ -1,6 +1,11 @@
 #ifndef CACHE_STRUCT_H
 #define CACHE_STRUCT_H
 
+#include "linkedlist.h"
+#include <libs/hashmap.c/hashmap.h>
+
+typedef struct hashmap HashMap;
+
 const unsigned char ADDRESS_WIDTHS[] = {
     4,
     6,
@@ -23,7 +28,7 @@ const unsigned char ASSOCIATIVITIES[] = {
     2,
     4};
 
-typedef struct Cache
+typedef struct CacheOptions
 {
     unsigned char address_width;
     unsigned char cache_size;
@@ -32,6 +37,24 @@ typedef struct Cache
     unsigned char write_back;
     unsigned char write_allocate;
     unsigned char replacement;
-} Cache;
+} CacheOptions;
+
+typedef struct Line
+{
+    unsigned char valid;
+    unsigned char dirty;
+    Node* node;
+} Line;
+
+typedef struct Set
+{
+    HashMap* lines;
+    DoublyLinkedList* order;
+} Set;
+
+int read(Set *cache, CacheOptions *cache_ops, short address, HashMap* hm, DoublyLinkedList* ll);
+int write(Set *cache, CacheOptions *cache_ops, short address, HashMap* hm, DoublyLinkedList* ll);
+int evict(Set *cache, CacheOptions *cache_ops, short address, HashMap* hm, DoublyLinkedList* ll);
+int flush(Set *cache, CacheOptions *cache_ops, short address, HashMap* hm, DoublyLinkedList* ll);
 
 #endif // CACHE_STRUCT_H
