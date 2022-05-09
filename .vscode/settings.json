@@ -12,6 +12,7 @@
         "cstdint": "c",
         "typeinfo": "c",
         "linkedlist.h": "c",
-        "hashmap.h": "c"
+        "hashmap.h": "c",
+        "stdbool.h": "c"
     }
 }
