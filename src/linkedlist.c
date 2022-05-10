@@ -1,7 +1,7 @@
 #include "linkedlist.h"
 #include <stdlib.h>
 
-void insert_tail(DoublyLinkedList *ll, unsigned short address)
+Node * insert_tail(DoublyLinkedList *ll, unsigned short address)
 {
     Node *new_node = (Node *)calloc(1, sizeof(Node));
     new_node->address = address;
@@ -19,28 +19,43 @@ void insert_tail(DoublyLinkedList *ll, unsigned short address)
         ll->head = new_node;
     }
     ll->tail = new_node;
+    return new_node;
 }
-void move_to_end(DoublyLinkedList *ll, unsigned short address)
+// void move_to_end(DoublyLinkedList *ll, unsigned short address)
+// {
+//     if (ll->tail->address == address)
+//     {
+//         return;
+//     }
+
+//     Node *curr = ll->head;
+//     while (curr->address != address)
+//     {
+//         curr = curr->next;
+//     }
+//     if (curr != ll->tail)
+//     {
+//         curr->prev->next = curr->next;
+//         curr->next->prev = curr->prev;
+//         ll->tail->next = curr;
+//         curr->prev = ll->tail;
+//         curr->next = ll->tail->next;
+//         ll->tail = curr;
+//     }
+// }
+void move_to_end(DoublyLinkedList *ll, Node *node)
 {
-    if (ll->tail->address == address)
+    if (node == ll->tail)
     {
         return;
     }
-
-    Node *curr = ll->head;
-    while (curr->address != address)
+    if (node == ll->head)
     {
-        curr = curr->next;
+        ll->head = node->next;
     }
-    if (curr != ll->tail)
-    {
-        curr->prev->next = curr->next;
-        curr->next->prev = curr->prev;
-        ll->tail->next = curr;
-        curr->prev = ll->tail;
-        curr->next = ll->tail->next;
-        ll->tail = curr;
-    }
+    node->prev = ll->tail;
+    node->next = ll->tail->next;
+    ll->tail = node;
 }
 void remove_head(DoublyLinkedList *ll)
 {
@@ -55,4 +70,18 @@ void remove_head(DoublyLinkedList *ll)
         free(ll->head->prev);
         ll->head->prev = 0;
     }
+}
+
+void list_free(DoublyLinkedList *ll)
+{
+    if (!ll)
+    {
+        return;
+    }
+    while (ll->head)
+    {
+        remove_head(ll);
+    }
+    free(ll);
+    ll = 0;  
 }

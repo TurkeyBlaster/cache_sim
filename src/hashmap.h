@@ -22,9 +22,9 @@ typedef struct HashMap
 
 HashMap *hashmap_malloc(uint capacity, uint data_size);
 void hashmap_free(HashMap *map);
-bool insert(HashMap *map, void *elem, bool probe);
-bool remove(HashMap *map, void *elem);
-bool find(HashMap *map, uint hash, uint *index);
+bool hashmap_insert(HashMap *map, void *elem, uint index, uint hash);
+bool hashmap_remove(HashMap *map, uint index);
+bool hashmap_find(HashMap *map, uint hash, uint *index);
 
 // Taken from https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
 // answer by Thomas Mueller

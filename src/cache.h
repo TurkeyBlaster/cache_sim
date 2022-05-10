@@ -2,9 +2,9 @@
 #define CACHE_STRUCT_H
 
 #include "linkedlist.h"
-#include <libs/hashmap.c/hashmap.h>
+#include "hashmap.h"
 
-typedef struct hashmap HashMap;
+extern char *memory; // To be declared in main
 
 const unsigned char ADDRESS_WIDTHS[] = {
     4,
@@ -39,22 +39,30 @@ typedef struct CacheOptions
     unsigned char replacement;
 } CacheOptions;
 
-typedef struct Line
-{
-    unsigned char valid;
-    unsigned char dirty;
-    Node* node;
-} Line;
+// typedef struct Line
+// {
+//     void *node;
+// } Line;
 
 typedef struct Set
 {
-    HashMap* lines;
-    DoublyLinkedList* order;
+    HashMap *lines;
+    DoublyLinkedList *order;
 } Set;
 
-int read(Set *cache, CacheOptions *cache_ops, short address, HashMap* hm, DoublyLinkedList* ll);
-int write(Set *cache, CacheOptions *cache_ops, short address, HashMap* hm, DoublyLinkedList* ll);
-int evict(Set *cache, CacheOptions *cache_ops, short address, HashMap* hm, DoublyLinkedList* ll);
-int flush(Set *cache, CacheOptions *cache_ops, short address, HashMap* hm, DoublyLinkedList* ll);
+typedef struct Cache
+{
+    Set *cache;
+    char *data;
+    short offset_mask;
+    short index_mask;
+    short offset_bits;
+} Cache;
+
+bool read(Cache *cache, CacheOptions *cache_ops, short address);
+bool write(Cache *cache, CacheOptions *cache_ops, short address, char data);
+void insert(Set *set, CacheOptions *cache_ops, short address, uint index, uint hash);
+void evict(Set *set, CacheOptions *cache_ops);
+int flush(Cache *cache, CacheOptions *cache_ops, short address);
 
 #endif // CACHE_STRUCT_H
