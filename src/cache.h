@@ -56,9 +56,10 @@ typedef struct Cache
     char *data;
     short offset_mask;
     short index_mask;
-    short offset_bits;
 } Cache;
 
+Cache *build_cache(Cache *cache, CacheOptions *cache_ops);
+void delete_cache(Cache *cache, CacheOptions *cache_ops);
 bool read(Cache *cache, CacheOptions *cache_ops, short address);
 bool write(Cache *cache, CacheOptions *cache_ops, short address, char data);
 void insert(Set *set, CacheOptions *cache_ops, short address, uint index, uint hash);
