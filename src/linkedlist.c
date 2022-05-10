@@ -51,11 +51,38 @@ void move_to_end(DoublyLinkedList *ll, Node *node)
     }
     if (node == ll->head)
     {
-        ll->head = node->next;
+        ll->head = ll->head->next;
+        ll->head->prev = 0;
     }
     node->prev = ll->tail;
     node->next = ll->tail->next;
     ll->tail = node;
+}
+void increase_order(DoublyLinkedList *ll, Node *node)
+{
+    if (ll->head == ll->tail)
+    {
+        return;
+    }
+    if (node->count >= ll->tail->count)
+    {
+        move_to_end(ll, node);
+    }
+    else
+    {
+        Node *curr = node->next;
+        while (node->count >= curr->count)
+        {
+            curr = curr->next;
+        }
+        if (node == ll->head && curr != ll->head->next)
+        {
+            ll->head = ll->head->next;
+            ll->head->prev = 0;
+        }
+        node->prev = curr->prev->prev;
+        node->next = curr;
+    }
 }
 void remove_head(DoublyLinkedList *ll)
 {

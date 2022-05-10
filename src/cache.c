@@ -1,19 +1,38 @@
 #include "cache.h"
 
+static inline void hit_handler(Set *set, CacheOptions *cache_ops, uint index)
+{
+    if (!(cache_ops->replacement & 0x2)) // LRU, LFU
+    {
+        Node *node = (Node *)(set->lines->map) + index * sizeof(Node *);
+        if (cache_ops->replacement) // LFU
+        {
+            ++(node->count);
+            increase_order(set->order, node);
+        }
+        else // LRU
+        {
+            move_to_end(set->order, node);
+        }
+    }
+}
+
 bool read(Cache *cache, CacheOptions *cache_ops, short address)
 {
     short offset = address & cache->offset_mask;
     address &= ~cache->offset_mask;
-    uint index = (address & cache->index_mask) >> cache->offset_bits;
-    Set *set = &cache->cache[index];
+    uint set_index = (address & cache->index_mask) >> cache->offset_bits;
+    Set *set = &cache->cache[set_index];
+    uint index;
     uint hash = set->lines->hash_algo(address);
     if (hashmap_find(set->lines, hash, &index))
     {
+        hit_handler(set, cache_ops, index);
         return true;
     }
     if (set->lines->size >= cache_ops->associativity)
     {
-        evict(set, cache_ops);
+        evict(set, cache_ops, set_index, cache->data);
     }
     insert(set, cache_ops, address, index, hash);
     return false;
@@ -21,10 +40,14 @@ bool read(Cache *cache, CacheOptions *cache_ops, short address)
 
 void insert(Set *set, CacheOptions *cache_ops, short address, uint index, uint hash)
 {
-    if (!cache_ops->replacement) // LRU
+    if (!(cache_ops->replacement & 0x1)) // LRU, FIFO
     {
         Node *node = insert_tail(set->order, address);
         hashmap_insert(set->lines, node, index, hash);
+    }
+    else if (cache_ops->replacement == 1)
+    {
+        Node *node = insert_head(set->order, address);
     }
     else
     {
@@ -32,26 +55,30 @@ void insert(Set *set, CacheOptions *cache_ops, short address, uint index, uint h
     }
 }
 
-void evict(Set *set, CacheOptions *cache_ops)
+void evict(Set *set, CacheOptions *cache_ops, uint set_index, char *data)
 {
-    short address;
-    switch (cache_ops->replacement)
+    unsigned short address;
+    uint index;
+    if (cache_ops->replacement != 3) // LRU, LFU, FIFO
     {
-    case 0:
         Node *line_to_evict = set->order->head;
-        uint index;
-        uint hash = set->lines->hash_algo(line_to_evict->address);
+        address = line_to_evict->address;
+        uint hash = set->lines->hash_algo(address);
         hashmap_find(set->lines, hash, index);
-        // hashmap_remove(set->lines, );
-        break;
-    
-    case 1:
-
-    case 2:
-    
-    default:
-        break;
     }
+    else // Random
+    {
+        index = rand() % set->lines->capacity;
+    }
+    if (set->lines->cell_attrs[index].flag & 0x4) // If dirty bit
+    {
+        // Write back the whole block to memory
+        for (size_t i = 0; i < cache_ops->block_size; ++i)
+        {
+            memory[address + i] = data[set_index * cache_ops->block_size + i];
+        }
+    }
+    hashmap_remove(set->lines, index);
 }
 
 bool write(Cache *cache, CacheOptions *cache_ops, short address, char data)
@@ -62,12 +89,13 @@ bool write(Cache *cache, CacheOptions *cache_ops, short address, char data)
     Set *set = &cache->cache[set_index];
     uint hash = set->lines->hash_algo(address);
     uint index;
-    if(hashmap_find(set->lines, hash, &index))
+    if (hashmap_find(set->lines, hash, &index))
     {
+        hit_handler(set, cache_ops, index);
         cache->data[set_index * cache_ops->block_size + offset] = data;
         if (cache_ops->write_back)
         {
-            set->lines->cell_attrs[index].flag |= 0x2; // Toggle dirty bit on
+            set->lines->cell_attrs[index].flag |= 0x4; // Toggle dirty bit on
         }
         else
         {

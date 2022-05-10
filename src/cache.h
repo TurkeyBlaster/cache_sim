@@ -62,7 +62,7 @@ typedef struct Cache
 bool read(Cache *cache, CacheOptions *cache_ops, short address);
 bool write(Cache *cache, CacheOptions *cache_ops, short address, char data);
 void insert(Set *set, CacheOptions *cache_ops, short address, uint index, uint hash);
-void evict(Set *set, CacheOptions *cache_ops);
+void evict(Set *set, CacheOptions *cache_ops, uint set_index, char *data);
 int flush(Cache *cache, CacheOptions *cache_ops, short address);
 
 #endif // CACHE_STRUCT_H

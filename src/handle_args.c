@@ -51,8 +51,9 @@ void parse_args(CacheOptions *cache_options)
     validate_arg(&cache_options->replacement, NULL, 2,
                  "Replacement:\n"
                  " 0 = LRU\n"
-                 " 1 = Random\n"
+                 " 1 = LFU\n"
                  " 2 = FIFO\n"
+                 " 3 = Random\n"
                  "Enter choice: ",
                  "Invalid choice, must be an integer between 0 and 2");
 }
