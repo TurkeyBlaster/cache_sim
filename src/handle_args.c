@@ -58,17 +58,17 @@ void parse_args(CacheOptions *cache_options)
                  "Invalid choice, must be an integer between 0 and 2");
 }
 
-void validate_arg(char *char_member, const char options[], char limit, char *prompt, char *error_msg)
+void validate_arg(unsigned char *char_member, const unsigned char options[], char limit, char *prompt, char *error_msg)
 {
     char delimiter;
     while (1)
     {
-        printf(prompt);
+        printf("%s", prompt);
         *char_member = fgetc(stdin) - '0';
         delimiter = fgetc(stdin);
         if (*char_member > limit && delimiter != '\n' && delimiter != '\r')
         {
-            printf(error_msg);
+            printf("%s", error_msg);
         }
         else
         {

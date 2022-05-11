@@ -17,23 +17,13 @@ typedef struct HashMap
     uint cell_size;
     uint capacity;
     uint size;
-    uint (*hash_algo)(const void *elem);
+    uint (*hash_algo)(uint elem);
 } HashMap;
 
-HashMap *hashmap_malloc(uint capacity, uint data_size);
+HashMap *hashmap_malloc(uint capacity, uint data_size, uint (*hash_algo)(uint elem));
 void hashmap_free(HashMap *map);
 bool hashmap_insert(HashMap *map, void *elem, uint index, uint hash);
-bool hashmap_remove(HashMap *map, uint index);
+void hashmap_remove(HashMap *map, uint index);
 bool hashmap_find(HashMap *map, uint hash, uint *index);
-
-// Taken from https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
-// answer by Thomas Mueller
-uint hash_int(uint x)
-{
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = (x >> 16) ^ x;
-    return x;
-}
 
 #endif // HASHMAP_H

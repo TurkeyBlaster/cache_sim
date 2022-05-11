@@ -1,4 +1,27 @@
 #include "cache.h"
+#include "linkedlist.h"
+#include "hashmap.h"
+
+const unsigned char ADDRESS_WIDTHS[] = {
+    4,
+    6,
+    8,
+    10,
+    12};
+const unsigned char CACHE_SIZES[] = {
+    8,
+    16,
+    32,
+    64,
+    128};
+const unsigned char BLOCK_SIZES[] = {
+    2,
+    4,
+    8};
+const unsigned char ASSOCIATIVITIES[] = {
+    1,
+    2,
+    4};
 
 static inline void hit_handler(Set *set, CacheOptions *cache_ops, uint index)
 {
@@ -17,7 +40,7 @@ static inline void hit_handler(Set *set, CacheOptions *cache_ops, uint index)
     }
 }
 
-Cache *build_cache(Cache *cache, CacheOptions *cache_ops)
+void build_cache(Cache *cache, CacheOptions *cache_ops, uint (*hash_algo)(uint elem))
 {
     cache = (Cache *)malloc(sizeof(Cache));
     unsigned char num_sets = cache_ops->cache_size / (cache_ops->block_size * cache_ops->associativity);
@@ -26,7 +49,8 @@ Cache *build_cache(Cache *cache, CacheOptions *cache_ops)
     {
         cache->cache[i].lines = hashmap_malloc(
             cache_ops->associativity,
-            cache_ops->replacement == 3 ? sizeof(Node *) : sizeof(unsigned short));
+            cache_ops->replacement == 3 ? sizeof(Node *) : sizeof(unsigned short),
+            hash_algo);
         if (cache_ops->replacement == 3)
         {
             cache->cache[i].order = (DoublyLinkedList *)malloc(sizeof(DoublyLinkedList));
@@ -38,8 +62,8 @@ Cache *build_cache(Cache *cache, CacheOptions *cache_ops)
         }
     }
     cache->data = malloc(sizeof(char) * cache_ops->cache_size);
-    cache->offset_mask = 0x1 << (cache_ops->block_size + 1) - 1;
-    cache->index_mask = 0x1 << (num_sets + 1) - 1 - cache->offset_mask;
+    cache->offset_mask = (0x1 << (cache_ops->block_size + 1)) - 1;
+    cache->index_mask = (0x1 << (num_sets + 1)) - 1 - cache->offset_mask;
 }
 
 void delete_cache(Cache *cache, CacheOptions *cache_ops)
@@ -58,14 +82,13 @@ void delete_cache(Cache *cache, CacheOptions *cache_ops)
     free(cache);
 }
 
-bool read(Cache *cache, CacheOptions *cache_ops, short address)
+bool read(Cache *cache, CacheOptions *cache_ops, unsigned short address)
 {
-    short offset = address & cache->offset_mask;
     address &= ~cache->offset_mask;
     uint set_index = (address & cache->index_mask) >> cache_ops->block_size;
     Set *set = &cache->cache[set_index];
     uint index;
-    uint hash = set->lines->hash_algo(address);
+    uint hash = set->lines->hash_algo((uint)address);
     if (hashmap_find(set->lines, hash, &index))
     {
         hit_handler(set, cache_ops, index);
@@ -79,16 +102,17 @@ bool read(Cache *cache, CacheOptions *cache_ops, short address)
     return false;
 }
 
-void insert(Set *set, CacheOptions *cache_ops, short address, uint index, uint hash)
+void insert(Set *set, CacheOptions *cache_ops, unsigned short address, uint index, uint hash)
 {
     if (!(cache_ops->replacement & 0x1)) // LRU, FIFO
     {
         Node *node = insert_tail(set->order, address);
         hashmap_insert(set->lines, node, index, hash);
     }
-    else if (cache_ops->replacement == 1)
+    else if (cache_ops->replacement == 1) // LFU
     {
         Node *node = insert_head(set->order, address);
+        hashmap_insert(set->lines, node, index, hash);
     }
     else
     {
@@ -104,8 +128,8 @@ void evict(Set *set, CacheOptions *cache_ops, uint set_index, char *data)
     {
         Node *line_to_evict = set->order->head;
         address = line_to_evict->address;
-        uint hash = set->lines->hash_algo(address);
-        hashmap_find(set->lines, hash, index);
+        uint hash = set->lines->hash_algo((uint)address);
+        hashmap_find(set->lines, hash, &index);
     }
     else // Random
     {
@@ -122,13 +146,13 @@ void evict(Set *set, CacheOptions *cache_ops, uint set_index, char *data)
     hashmap_remove(set->lines, index);
 }
 
-bool write(Cache *cache, CacheOptions *cache_ops, short address, char data)
+bool write(Cache *cache, CacheOptions *cache_ops, unsigned short address, char data)
 {
     short offset = address & cache->offset_mask;
     address &= ~cache->offset_mask;
     uint set_index = (address & cache->index_mask) >> cache_ops->block_size;
     Set *set = &cache->cache[set_index];
-    uint hash = set->lines->hash_algo(address);
+    uint hash = set->lines->hash_algo((uint)address);
     uint index;
     if (hashmap_find(set->lines, hash, &index))
     {
@@ -142,6 +166,7 @@ bool write(Cache *cache, CacheOptions *cache_ops, short address, char data)
         {
             memory[address] = data;
         }
+        return true;
     }
     else
     {
@@ -150,5 +175,6 @@ bool write(Cache *cache, CacheOptions *cache_ops, short address, char data)
         {
             insert(set, cache_ops, address, index, hash);
         }
+        return false;
     }
 }

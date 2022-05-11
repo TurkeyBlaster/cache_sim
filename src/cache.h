@@ -6,27 +6,10 @@
 
 extern char *memory; // To be declared in main
 
-const unsigned char ADDRESS_WIDTHS[] = {
-    4,
-    6,
-    8,
-    10,
-    12};
-const unsigned char CACHE_SIZES[] = {
-    8,
-    16,
-    32,
-    64,
-    128,
-    256};
-const unsigned char BLOCK_SIZES[] = {
-    2,
-    4,
-    8};
-const unsigned char ASSOCIATIVITIES[] = {
-    1,
-    2,
-    4};
+extern const unsigned char ADDRESS_WIDTHS[];
+extern const unsigned char CACHE_SIZES[];
+extern const unsigned char BLOCK_SIZES[];
+extern const unsigned char ASSOCIATIVITIES[];
 
 typedef struct CacheOptions
 {
@@ -58,12 +41,12 @@ typedef struct Cache
     short index_mask;
 } Cache;
 
-Cache *build_cache(Cache *cache, CacheOptions *cache_ops);
+void build_cache(Cache *cache, CacheOptions *cache_ops, uint (*hash_algo)(uint elem));
 void delete_cache(Cache *cache, CacheOptions *cache_ops);
-bool read(Cache *cache, CacheOptions *cache_ops, short address);
-bool write(Cache *cache, CacheOptions *cache_ops, short address, char data);
-void insert(Set *set, CacheOptions *cache_ops, short address, uint index, uint hash);
+bool read(Cache *cache, CacheOptions *cache_ops, unsigned short address);
+bool write(Cache *cache, CacheOptions *cache_ops, unsigned short address, char data);
+void insert(Set *set, CacheOptions *cache_ops, unsigned short address, uint index, uint hash);
 void evict(Set *set, CacheOptions *cache_ops, uint set_index, char *data);
-int flush(Cache *cache, CacheOptions *cache_ops, short address);
+int flush(Cache *cache, CacheOptions *cache_ops, unsigned short address);
 
 #endif // CACHE_STRUCT_H

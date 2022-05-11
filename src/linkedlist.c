@@ -1,18 +1,29 @@
 #include "linkedlist.h"
 #include <stdlib.h>
-
-Node * insert_tail(DoublyLinkedList *ll, unsigned short address)
+Node *insert_head(DoublyLinkedList *ll, unsigned short address)
+{
+    Node *new_node = (Node *)calloc(1, sizeof(Node));
+    new_node->address = address;
+    if (ll->head)
+    {
+        new_node->next = ll->head;
+        ll->head->prev = new_node;
+    }
+    else
+    {
+        ll->tail = new_node;
+    }
+    ll->head = new_node;
+    return new_node;
+}
+Node *insert_tail(DoublyLinkedList *ll, unsigned short address)
 {
     Node *new_node = (Node *)calloc(1, sizeof(Node));
     new_node->address = address;
     if (ll->tail)
     {
-        if (ll->tail == ll->head)
-        {
-            ll->head->next = new_node;
-        }
-        ll->tail->next = new_node;
         new_node->prev = ll->tail;
+        ll->tail->next = new_node;
     }
     else
     {
@@ -21,28 +32,6 @@ Node * insert_tail(DoublyLinkedList *ll, unsigned short address)
     ll->tail = new_node;
     return new_node;
 }
-// void move_to_end(DoublyLinkedList *ll, unsigned short address)
-// {
-//     if (ll->tail->address == address)
-//     {
-//         return;
-//     }
-
-//     Node *curr = ll->head;
-//     while (curr->address != address)
-//     {
-//         curr = curr->next;
-//     }
-//     if (curr != ll->tail)
-//     {
-//         curr->prev->next = curr->next;
-//         curr->next->prev = curr->prev;
-//         ll->tail->next = curr;
-//         curr->prev = ll->tail;
-//         curr->next = ll->tail->next;
-//         ll->tail = curr;
-//     }
-// }
 void move_to_end(DoublyLinkedList *ll, Node *node)
 {
     if (node == ll->tail)
@@ -110,5 +99,5 @@ void list_free(DoublyLinkedList *ll)
         remove_head(ll);
     }
     free(ll);
-    ll = 0;  
+    ll = 0;
 }

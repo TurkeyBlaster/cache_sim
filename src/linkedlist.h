@@ -5,8 +5,8 @@ typedef struct Node
 {
     unsigned short address;
     unsigned short count;
-    Node *prev;
-    Node *next;
+    struct Node *prev;
+    struct Node *next;
 } Node;
 
 typedef struct DoublyLinkedList
@@ -17,7 +17,6 @@ typedef struct DoublyLinkedList
 
 Node *insert_head(DoublyLinkedList *ll, unsigned short address);
 Node *insert_tail(DoublyLinkedList *ll, unsigned short address);
-// void move_to_end(DoublyLinkedList *ll, unsigned short address);
 void move_to_end(DoublyLinkedList *ll, Node *node);
 void increase_order(DoublyLinkedList *ll, Node *node);
 void remove_head(DoublyLinkedList *ll);

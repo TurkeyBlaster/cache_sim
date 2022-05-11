@@ -1,7 +1,7 @@
 #include "hashmap.h"
 #include <string.h>
 
-HashMap *hashmap_malloc(uint capacity, uint data_size)
+HashMap *hashmap_malloc(uint capacity, uint data_size, uint (*hash_algo)(uint elem))
 {
     HashMap *map = (HashMap *)malloc(sizeof(HashMap));
     map->map = malloc(capacity*data_size);
@@ -9,6 +9,7 @@ HashMap *hashmap_malloc(uint capacity, uint data_size)
     map->cell_size = data_size;
     map->capacity = capacity;
     map->size = 0;
+    map->hash_algo = hash_algo;
     return map;
 }
 
@@ -24,15 +25,6 @@ bool hashmap_insert(HashMap *map, void *elem, uint index, uint hash)
 {
     if (map->size >= map->capacity)
     {
-        return false;
-    }
-    if (!index)
-    {
-        uint hash = map->hash_algo((const) elem);
-        uint index = hash % map->capacity;
-        bool first_empty_set = false;
-        uint first_empty = index;
-        hashmap_find(map, hash, &index);
         return false;
     }
     memcpy((char *)map->map + map->cell_size * index, (char *)elem, map->cell_size);
@@ -82,14 +74,14 @@ bool hashmap_insert(HashMap *map, void *elem, uint index, uint hash)
 //     return false;
 // }
 
-bool hashmap_remove(HashMap *map, uint index)
+void hashmap_remove(HashMap *map, uint index)
 {
     map->cell_attrs[index].flag = 1;
 }
 
 bool hashmap_find(HashMap *map, uint hash, uint *index)
 {
-    uint *index = hash % map->capacity;
+    *index = hash % map->capacity;
     bool first_empty_set = false;
     uint first_empty = *index;
     for (uint i = 0; i < map->capacity; ++i)
@@ -99,7 +91,7 @@ bool hashmap_find(HashMap *map, uint hash, uint *index)
             if (map->cell_attrs[*index].flag == 1 && !first_empty_set)
             {
                 first_empty_set = true;
-                first_empty = index;
+                first_empty = *index;
             }
             if (map->cell_attrs[*index].hash == hash)
             {
