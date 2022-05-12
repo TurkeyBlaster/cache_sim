@@ -35,6 +35,8 @@ typedef struct Cache
     char offset_mask;
     char offset_size;
     char index_mask;
+    unsigned char index_size;
+    unsigned char num_sets;
 } Cache;
 
 Cache *build_cache(CacheOptions *cache_ops, uint (*hash_algo)(uint elem));
@@ -44,5 +46,7 @@ bool write(Cache *cache, CacheOptions *cache_ops, unsigned short address, char d
 void insert(Set *set, CacheOptions *cache_ops, unsigned short address, uint index, uint hash);
 void evict(Set *set, CacheOptions *cache_ops);
 int flush(Cache *cache, CacheOptions *cache_ops, unsigned short address);
+void print_cache(Cache *cache, CacheOptions *cache_ops);
+void print_memory(Cache *cache, CacheOptions *cache_ops);
 
 #endif // CACHE_STRUCT_H

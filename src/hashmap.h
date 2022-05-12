@@ -7,7 +7,7 @@
 typedef struct CellAttrs
 {
     uint hash;
-    char flag;
+    char flag; // Bit 0 = Delete, Bit 1 = Valid, Bit 2 = Dirty
 } CellAttrs;
 
 typedef struct HashMap

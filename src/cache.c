@@ -2,6 +2,7 @@
 #include "linkedlist.h"
 #include "hashmap.h"
 #include <string.h>
+#include <stdio.h>
 
 const unsigned char ADDRESS_WIDTHS[] = {
     4,
@@ -44,9 +45,9 @@ static inline void hit_handler(Set *set, CacheOptions *cache_ops, uint index)
 Cache *build_cache(CacheOptions *cache_ops, uint (*hash_algo)(uint elem))
 {
     Cache *cache = (Cache *)malloc(sizeof(Cache));
-    unsigned char num_sets = cache_ops->cache_size / (cache_ops->block_size * cache_ops->associativity);
-    cache->sets = (Set *)malloc(sizeof(Set) * num_sets);
-    for (unsigned char i = 0; i < num_sets; ++i)
+    cache->num_sets = cache_ops->cache_size / (cache_ops->block_size * cache_ops->associativity);
+    cache->sets = (Set *)malloc(sizeof(Set) * cache->num_sets);
+    for (unsigned char i = 0; i < cache->num_sets; ++i)
     {
         cache->sets[i].data = (char *)malloc(
             sizeof(char) * cache_ops->block_size * cache_ops->associativity);
@@ -63,16 +64,24 @@ Cache *build_cache(CacheOptions *cache_ops, uint (*hash_algo)(uint elem))
             cache->sets[i].order = 0;
         }
     }
-    unsigned char b_size = cache_ops->block_size;
+    unsigned char _size = cache_ops->block_size;
     cache->offset_mask = 0x1;
     cache->offset_size = 0;
-    while (b_size >>= 1)
+    while (_size >>= 1)
     {
         cache->offset_mask <<= 1;
         ++cache->offset_size;
     }
     --cache->offset_mask;
-    cache->index_mask = (0x1 << (num_sets - 1)) - 1; // TODO: If index is 0...?
+    _size = cache->num_sets;
+    cache->index_mask = 0x1;
+    cache->index_size = 0;
+    while (_size >>= 1)
+    {
+        cache->index_mask <<= 1;
+        ++cache->index_size;
+    }
+    --cache->index_mask;
     return cache;
 }
 
@@ -185,5 +194,78 @@ bool write(Cache *cache, CacheOptions *cache_ops, unsigned short address, char d
             insert(set, cache_ops, masked_address, index, hash);
         }
         return false;
+    }
+}
+
+void print_cache(Cache *cache, CacheOptions *cache_ops)
+{
+    Set *set;
+    HashMap *line;
+    bool valid;
+    for (unsigned int i = 0; i < (unsigned int)cache->num_sets; ++i)
+    {
+        set = &cache->sets[i];
+        printf("Set %u:\n", i);
+        printf("I\tV\tD\tT\tData\n");
+        for (unsigned int j = 0; j < (unsigned int)cache_ops->associativity; ++j)
+        {
+            line = &set->lines[j];
+            valid = line->cell_attrs->flag & 0x2;
+            printf("%d\t%d\t%d\t", j, valid);
+            if (valid)
+            {
+                unsigned char tag;
+                if (cache_ops->replacement != 3)
+                {
+                    tag = ((Node **)set->lines->map)[j]->address;
+                }
+                else
+                {
+                    tag = ((short *)set->lines->map)[j];
+                }
+                tag >>= (cache->offset_size + cache->index_size);
+                printf("%d\t%d\t", line->cell_attrs->flag >> 2, tag);
+                for (unsigned k = 0; k < cache_ops->block_size; ++k)
+                {
+                   printf("%#02X ", set->data[j * cache_ops->block_size + k]);
+                }
+            }
+            printf("\n");
+        }
+    }
+}
+
+void print_memory(Cache *cache, CacheOptions *cache_ops)
+{
+    Set *set;
+    HashMap *line;
+    bool valid;
+    for (unsigned int i = 0; i < (unsigned int)cache->num_sets; ++i)
+    {
+        set = &cache->sets[i];
+        printf("Set %u:\n", i);
+        for (unsigned int j = 0; j < (unsigned int)cache_ops->associativity; ++j)
+        {
+            line = &set->lines[j];
+            valid = line->cell_attrs->flag & 0x2;
+            if (valid)
+            {
+                unsigned char address;
+                if (cache_ops->replacement != 3)
+                {
+                    address = ((Node **)set->lines->map)[j]->address;
+                }
+                else
+                {
+                    address = ((short *)set->lines->map)[j];
+                }
+                printf("%#04X:\t", address);
+                for (unsigned k = 0; k < cache_ops->block_size; ++k)
+                {
+                   printf("%#02X ", memory[address + k]);
+                }
+            }
+            printf("\n");
+        }
     }
 }

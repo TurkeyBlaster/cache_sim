@@ -129,11 +129,11 @@ int main(int argc, char const *argv[])
                         switch (getchar())
                         {
                         case 'C':
-
+                            print_cache(cache, &cache_ops);
                             break;
 
                         case 'M':
-
+                            print_memory(cache, &cache_ops);
                             break;
 
                         default:
