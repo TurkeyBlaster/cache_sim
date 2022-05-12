@@ -4,7 +4,7 @@
 HashMap *hashmap_malloc(uint capacity, uint data_size, uint (*hash_algo)(uint elem))
 {
     HashMap *map = (HashMap *)malloc(sizeof(HashMap));
-    map->map = malloc(capacity*data_size);
+    map->map = malloc(capacity * data_size);
     map->cell_attrs = (CellAttrs *)calloc(capacity, sizeof(CellAttrs));
     map->cell_size = data_size;
     map->capacity = capacity;
@@ -21,58 +21,18 @@ void hashmap_free(HashMap *map)
     map = 0;
 }
 
-bool hashmap_insert(HashMap *map, void *elem, uint index, uint hash)
+bool hashmap_insert(HashMap *map, unsigned long elem, uint index, uint hash)
 {
     if (map->size >= map->capacity)
     {
         return false;
     }
-    memcpy((char *)map->map + map->cell_size * index, (char *)elem, map->cell_size);
+    memcpy((char *)map->map + map->cell_size * index, (char *)(&elem), map->cell_size);
     map->cell_attrs[index].flag = 2;
     map->cell_attrs[index].hash = hash;
     ++map->size;
     return true;
 }
-
-// bool hashmap_remove_elem(HashMap *map, void *elem)
-// {
-//     if (map->size == 0)
-//     {
-//         return false;
-//     }
-//     return hashmap_remove_hash(map, map->hash_algo((const) elem));
-// }
-
-// bool hashmap_remove_hash(HashMap *map, uint hash)
-// {
-//     uint index = hash % map->capacity;
-//     for (uint i = 0; i < map->capacity; ++i)
-//     {
-//         if (map->cell_attrs[index].flag)
-//         {
-//             if (map->cell_attrs[index].hash == hash)
-//             {
-//                 if (map->cell_attrs[index].flag == 2)
-//                 {
-//                     map->cell_attrs[index].flag = 1;
-//                     --map->size;
-//                     if (map->size == 0)
-//                     {
-//                         memset((char *)map->cell_attrs, 0, map->capacity*sizeof(CellAttrs));
-//                     }
-//                     return true;
-//                 }
-//                 else
-//                 {
-//                     return false;
-//                 }
-//             }
-//             ++index;
-//             index %= map->capacity;
-//         }
-//     }
-//     return false;
-// }
 
 void hashmap_remove(HashMap *map, uint index)
 {

@@ -22,7 +22,7 @@ typedef struct HashMap
 
 HashMap *hashmap_malloc(uint capacity, uint data_size, uint (*hash_algo)(uint elem));
 void hashmap_free(HashMap *map);
-bool hashmap_insert(HashMap *map, void *elem, uint index, uint hash);
+bool hashmap_insert(HashMap *map, unsigned long elem, uint index, uint hash);
 void hashmap_remove(HashMap *map, uint index);
 bool hashmap_find(HashMap *map, uint hash, uint *index);
 

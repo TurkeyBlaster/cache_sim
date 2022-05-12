@@ -58,7 +58,7 @@ static inline void print_op_results(bool hit, double *hits, double *misses)
         ++(*misses);
         printf("Missed\n");
     }
-    printf("Miss Rate: %d\n", (*hits > 0. && *misses > 0.) ? *hits / (*hits + *misses) : 0.);
+    printf("Miss Rate: %lf\n", (*hits > 0. && *misses > 0.) ? *hits / (*hits + *misses) : 0.);
 }
 
 int main(int argc, char const *argv[])
@@ -70,7 +70,8 @@ int main(int argc, char const *argv[])
     beginning:
         while (true)
         {
-            cache_ops.address_width = 4;
+            // DEBUG: predefined cache options
+            cache_ops.address_width = 8;
             cache_ops.cache_size = 32;
             cache_ops.block_size = 8;
             cache_ops.associativity = 2;
@@ -84,6 +85,7 @@ int main(int argc, char const *argv[])
             exit_bool = false;
             while (!exit_bool)
             {
+                address = data = 0;
                 printf("Enter a command\n"
                        " W <addr.> <0xDD> : write data 0xDD to cache at address <addr.>\n"
                        " R <addr.> : read from cache at address <addr.>\n"
@@ -144,7 +146,8 @@ int main(int argc, char const *argv[])
                     break;
                 invalid:
                 default:
-                    printf("\nInvalid argument");
+                    printf("Invalid argument\n");
+                    flush_istream(stdin);
                     break;
                 }
             }

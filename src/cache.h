@@ -22,21 +22,16 @@ typedef struct CacheOptions
     unsigned char replacement;
 } CacheOptions;
 
-// typedef struct Line
-// {
-//     void *node;
-// } Line;
-
 typedef struct Set
 {
     HashMap *lines;
     DoublyLinkedList *order;
+    char *data;
 } Set;
 
 typedef struct Cache
 {
-    Set *cache;
-    char *data;
+    Set *sets;
     char offset_mask;
     char offset_size;
     char index_mask;
@@ -47,7 +42,7 @@ void delete_cache(Cache *cache, CacheOptions *cache_ops);
 bool read(Cache *cache, CacheOptions *cache_ops, unsigned short address);
 bool write(Cache *cache, CacheOptions *cache_ops, unsigned short address, char data);
 void insert(Set *set, CacheOptions *cache_ops, unsigned short address, uint index, uint hash);
-void evict(Set *set, CacheOptions *cache_ops, uint set_index, char *data);
+void evict(Set *set, CacheOptions *cache_ops);
 int flush(Cache *cache, CacheOptions *cache_ops, unsigned short address);
 
 #endif // CACHE_STRUCT_H
