@@ -42,7 +42,7 @@ typedef struct Cache
     char index_mask;
 } Cache;
 
-void build_cache(Cache *cache, CacheOptions *cache_ops, uint (*hash_algo)(uint elem));
+Cache *build_cache(CacheOptions *cache_ops, uint (*hash_algo)(uint elem));
 void delete_cache(Cache *cache, CacheOptions *cache_ops);
 bool read(Cache *cache, CacheOptions *cache_ops, unsigned short address);
 bool write(Cache *cache, CacheOptions *cache_ops, unsigned short address, char data);

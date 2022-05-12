@@ -3,11 +3,14 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 char *memory;
 static unsigned short address;
 static unsigned short data;
 static bool hit;
+static double hits = 0;
+static double misses = 0;
 static bool exit_bool;
 // Taken from https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
 // answer by Thomas Mueller
@@ -20,7 +23,7 @@ uint hash_int(uint x)
 }
 static bool valid_hex(unsigned short *number, unsigned char num_digits)
 {
-    if (getchar() == ' ' && getchar() == '0' && getchar() == 'x')
+    if (getchar() == '0' && getchar() == 'x')
     {
         char x;
         bool x_is_numeric;
@@ -30,7 +33,9 @@ static bool valid_hex(unsigned short *number, unsigned char num_digits)
             x_is_numeric = x >= '0' && x <= '9';
             if (x_is_numeric || (x >= 'A' && x <= 'F'))
             {
-                *number += (x - ('0' ? x_is_numeric : 'A')) << ((num_digits - i) * 4);
+                x -= x_is_numeric ? '0' : '7'; // 'A' => ascii val. 65, 7 => ascii val. 55
+                x <<= (num_digits - i - 1) * 4;
+                *number += x;
             }
             else
             {
@@ -40,6 +45,20 @@ static bool valid_hex(unsigned short *number, unsigned char num_digits)
         return true;
     }
     return false;
+}
+static inline void print_op_results(bool hit, double *hits, double *misses)
+{
+    if (hit)
+    {
+        ++(*hits);
+        printf("Hit\n");
+    }
+    else
+    {
+        ++(*misses);
+        printf("Missed\n");
+    }
+    printf("Miss Rate: %d\n", (*hits > 0. && *misses > 0.) ? *hits / (*hits + *misses) : 0.);
 }
 
 int main(int argc, char const *argv[])
@@ -59,11 +78,11 @@ int main(int argc, char const *argv[])
             cache_ops.write_back = 1;
             cache_ops.write_allocate = 1;
             // parse_args(&cache_ops);
-            unsigned short address_max = 0x1 << (cache_ops.address_width + 1);
-            memory = (char *)malloc(address_max);
-            build_cache(cache, &cache_ops, hash_int);
+            unsigned short address_limit = 0x1 << (cache_ops.address_width);
+            memory = (char *)malloc(address_limit);
+            cache = build_cache(&cache_ops, hash_int);
             exit_bool = false;
-            while (exit_bool)
+            while (!exit_bool)
             {
                 printf("Enter a command\n"
                        " W <addr.> <0xDD> : write data 0xDD to cache at address <addr.>\n"
@@ -76,12 +95,13 @@ int main(int argc, char const *argv[])
                 case 'W':
                     if (getchar() == ' ' &&
                         valid_hex(&address, 4) &&
-                        address < address_max &&
+                        address < address_limit &&
                         getchar() == ' ' &&
                         valid_hex(&data, 2) &&
                         flush_istream(stdin))
                     {
                         hit = write(cache, &cache_ops, address, (unsigned char)data);
+                        print_op_results(hit, &hits, &misses);
                     }
                     else
                     {
@@ -91,10 +111,11 @@ int main(int argc, char const *argv[])
                 case 'R':
                     if (getchar() == ' ' &&
                         valid_hex(&address, 4) &&
-                        address < address_max &&
+                        address < address_limit &&
                         flush_istream(stdin))
                     {
                         hit = read(cache, &cache_ops, address);
+                        print_op_results(hit, &hits, &misses);
                     }
                     else
                     {
@@ -126,7 +147,7 @@ int main(int argc, char const *argv[])
                     printf("\nInvalid argument");
                     break;
                 }
-                        }
+            }
             free(memory);
             delete_cache(cache, &cache_ops);
             while (true)

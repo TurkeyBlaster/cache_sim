@@ -40,9 +40,9 @@ static inline void hit_handler(Set *set, CacheOptions *cache_ops, uint index)
     }
 }
 
-void build_cache(Cache *cache, CacheOptions *cache_ops, uint (*hash_algo)(uint elem))
+Cache *build_cache(CacheOptions *cache_ops, uint (*hash_algo)(uint elem))
 {
-    cache = (Cache *)malloc(sizeof(Cache));
+    Cache *cache = (Cache *)malloc(sizeof(Cache));
     unsigned char num_sets = cache_ops->cache_size / (cache_ops->block_size * cache_ops->associativity);
     cache->cache = (Set *)malloc(sizeof(Set) * num_sets);
     for (unsigned char i = 0; i < num_sets; ++i)
@@ -70,7 +70,8 @@ void build_cache(Cache *cache, CacheOptions *cache_ops, uint (*hash_algo)(uint e
         ++cache->offset_size;
     }
     --cache->offset_mask;
-    cache->index_mask = (0x1 << (num_sets + 1)) - 1;
+    cache->index_mask = (0x1 << (num_sets - 1)) - 1; // TODO: If index is 0...?
+    return cache;
 }
 
 void delete_cache(Cache *cache, CacheOptions *cache_ops)
