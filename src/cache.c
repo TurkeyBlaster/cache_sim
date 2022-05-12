@@ -51,10 +51,9 @@ void build_cache(Cache *cache, CacheOptions *cache_ops, uint (*hash_algo)(uint e
             cache_ops->associativity,
             cache_ops->replacement == 3 ? sizeof(Node *) : sizeof(unsigned short),
             hash_algo);
-        if (cache_ops->replacement == 3)
+        if (cache_ops->replacement != 3)
         {
-            cache->cache[i].order = (DoublyLinkedList *)malloc(sizeof(DoublyLinkedList));
-            cache->cache[i].order->head = cache->cache[i].order->tail = 0;
+            cache->cache[i].order = list_malloc();
         }
         else
         {
@@ -62,8 +61,16 @@ void build_cache(Cache *cache, CacheOptions *cache_ops, uint (*hash_algo)(uint e
         }
     }
     cache->data = malloc(sizeof(char) * cache_ops->cache_size);
-    cache->offset_mask = (0x1 << (cache_ops->block_size + 1)) - 1;
-    cache->index_mask = (0x1 << (num_sets + 1)) - 1 - cache->offset_mask;
+    unsigned char b_size = cache_ops->block_size;
+    cache->offset_mask = 0x1;
+    cache->offset_size = 0;
+    while (b_size >>= 1)
+    {
+        cache->offset_mask <<= 1;
+        ++cache->offset_size;
+    }
+    --cache->offset_mask;
+    cache->index_mask = (0x1 << (num_sets + 1)) - 1;
 }
 
 void delete_cache(Cache *cache, CacheOptions *cache_ops)
@@ -85,7 +92,7 @@ void delete_cache(Cache *cache, CacheOptions *cache_ops)
 bool read(Cache *cache, CacheOptions *cache_ops, unsigned short address)
 {
     address &= ~cache->offset_mask;
-    uint set_index = (address & cache->index_mask) >> cache_ops->block_size;
+    uint set_index = (address & cache->index_mask) >> cache->offset_size;
     Set *set = &cache->cache[set_index];
     uint index;
     uint hash = set->lines->hash_algo((uint)address);
@@ -150,7 +157,7 @@ bool write(Cache *cache, CacheOptions *cache_ops, unsigned short address, char d
 {
     short offset = address & cache->offset_mask;
     address &= ~cache->offset_mask;
-    uint set_index = (address & cache->index_mask) >> cache_ops->block_size;
+    uint set_index = (address & cache->index_mask) >> cache->offset_size;
     Set *set = &cache->cache[set_index];
     uint hash = set->lines->hash_algo((uint)address);
     uint index;

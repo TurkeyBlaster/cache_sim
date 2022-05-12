@@ -47,17 +47,20 @@ int main(int argc, char const *argv[])
     if (argc == 1 && strcmp(argv[0], "sim"))
     {
         Cache *cache = 0;
-    beginning:
-        if (!fflush(stdin))
-        {
-            return 1;
-        }
         CacheOptions cache_ops;
+    beginning:
         while (true)
         {
-            parse_args(&cache_ops);
+            cache_ops.address_width = 4;
+            cache_ops.cache_size = 32;
+            cache_ops.block_size = 8;
+            cache_ops.associativity = 2;
+            cache_ops.replacement = 0;
+            cache_ops.write_back = 1;
+            cache_ops.write_allocate = 1;
+            // parse_args(&cache_ops);
             unsigned short address_max = 0x1 << (cache_ops.address_width + 1);
-            memory = (char *)malloc(address_max + 1);
+            memory = (char *)malloc(address_max);
             build_cache(cache, &cache_ops, hash_int);
             exit_bool = false;
             while (exit_bool)
@@ -75,35 +78,27 @@ int main(int argc, char const *argv[])
                         valid_hex(&address, 4) &&
                         address < address_max &&
                         getchar() == ' ' &&
-                        valid_hex(&data, 2))
+                        valid_hex(&data, 2) &&
+                        flush_istream(stdin))
                     {
-                        char delim = getchar();
-                        if (delim != '\r' && delim != '\n')
-                        {
-                            goto fail;
-                        }
                         hit = write(cache, &cache_ops, address, (unsigned char)data);
                     }
                     else
                     {
-                        goto fail;
+                        goto invalid;
                     }
                     break;
                 case 'R':
                     if (getchar() == ' ' &&
                         valid_hex(&address, 4) &&
-                        address < address_max)
+                        address < address_max &&
+                        flush_istream(stdin))
                     {
-                        char delim = getchar();
-                        if (delim != '\r' && delim != '\n')
-                        {
-                            goto fail;
-                        }
                         hit = read(cache, &cache_ops, address);
                     }
                     else
                     {
-                        goto fail;
+                        goto invalid;
                     }
                 case 'P':
                     if (getchar() == ' ')
@@ -119,20 +114,19 @@ int main(int argc, char const *argv[])
                             break;
 
                         default:
-                            goto fail;
+                            goto invalid;
                         }
                     }
                     break;
                 case 'Q':
                     exit_bool = true;
                     break;
-                fail:
+                invalid:
                 default:
                     printf("\nInvalid argument");
                     break;
                 }
-                fflush(stdin);
-            }
+                        }
             free(memory);
             delete_cache(cache, &cache_ops);
             while (true)
@@ -141,15 +135,21 @@ int main(int argc, char const *argv[])
                 switch (getc(stdin))
                 {
                 case 'Y':
-                    goto exit;
+                    if (flush_istream(stdin))
+                    {
+                        goto exit;
+                    }
                     break;
                 case 'N':
-                    goto beginning;
+                    if (flush_istream(stdin))
+                    {
+                        goto beginning;
+                    }
                     break;
                 default:
-                    printf("That is an invalid option");
                     break;
                 }
+                printf("That is an invalid option");
             }
         }
     }

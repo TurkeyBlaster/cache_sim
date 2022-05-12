@@ -5,7 +5,7 @@ HashMap *hashmap_malloc(uint capacity, uint data_size, uint (*hash_algo)(uint el
 {
     HashMap *map = (HashMap *)malloc(sizeof(HashMap));
     map->map = malloc(capacity*data_size);
-    map->cell_attrs = calloc(capacity, sizeof(CellAttrs));
+    map->cell_attrs = (CellAttrs *)calloc(capacity, sizeof(CellAttrs));
     map->cell_size = data_size;
     map->capacity = capacity;
     map->size = 0;

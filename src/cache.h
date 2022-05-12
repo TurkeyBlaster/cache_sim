@@ -37,8 +37,9 @@ typedef struct Cache
 {
     Set *cache;
     char *data;
-    short offset_mask;
-    short index_mask;
+    char offset_mask;
+    char offset_size;
+    char index_mask;
 } Cache;
 
 void build_cache(Cache *cache, CacheOptions *cache_ops, uint (*hash_algo)(uint elem));

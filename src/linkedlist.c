@@ -1,5 +1,12 @@
 #include "linkedlist.h"
 #include <stdlib.h>
+
+DoublyLinkedList *list_malloc()
+{
+    DoublyLinkedList *ll = (DoublyLinkedList *)malloc(sizeof(DoublyLinkedList));
+    ll->head = ll->tail = 0;
+    return ll;
+}
 Node *insert_head(DoublyLinkedList *ll, unsigned short address)
 {
     Node *new_node = (Node *)calloc(1, sizeof(Node));

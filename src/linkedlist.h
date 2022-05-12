@@ -15,11 +15,12 @@ typedef struct DoublyLinkedList
     Node *tail;
 } DoublyLinkedList;
 
+DoublyLinkedList *list_malloc();
+void list_free(DoublyLinkedList *ll);
 Node *insert_head(DoublyLinkedList *ll, unsigned short address);
 Node *insert_tail(DoublyLinkedList *ll, unsigned short address);
 void move_to_end(DoublyLinkedList *ll, Node *node);
 void increase_order(DoublyLinkedList *ll, Node *node);
 void remove_head(DoublyLinkedList *ll);
-void list_free(DoublyLinkedList *ll);
 
 #endif // LINKED_LIST_H

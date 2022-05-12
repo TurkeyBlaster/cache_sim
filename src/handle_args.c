@@ -1,5 +1,18 @@
 #include "handle_args.h"
 #include <stdio.h>
+#include <stdbool.h>
+
+
+bool flush_istream(FILE *is)
+{
+    char c;
+    bool end_was_eol = true;
+    while((c = fgetc(is)) != '\n' && c != '\r' && c != EOF)
+    {
+        end_was_eol = false;
+    }
+    return end_was_eol;
+}
 
 void parse_args(CacheOptions *cache_options)
 {
@@ -60,15 +73,13 @@ void parse_args(CacheOptions *cache_options)
 
 void validate_arg(unsigned char *char_member, const unsigned char options[], char limit, char *prompt, char *error_msg)
 {
-    char delimiter;
     while (1)
     {
         printf("%s", prompt);
         *char_member = fgetc(stdin) - '0';
-        delimiter = fgetc(stdin);
-        if (*char_member > limit && delimiter != '\n' && delimiter != '\r')
+        if (!flush_istream(stdin) || *char_member > limit)
         {
-            printf("%s", error_msg);
+            printf("%s\n", error_msg);
         }
         else
         {
