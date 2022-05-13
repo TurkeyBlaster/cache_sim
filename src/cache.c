@@ -237,12 +237,11 @@ void print_cache(Cache *cache, CacheOptions *cache_ops)
 
 void print_memory(Cache *cache, CacheOptions *cache_ops)
 {
-    Set *set;
     HashMap *lines;
     bool valid;
     for (unsigned int i = 0; i < (unsigned int)cache->num_sets; ++i)
     {
-        lines = &cache->sets[i].lines;
+        lines = cache->sets[i].lines;
         printf("Set %u:\n", i);
         for (unsigned int j = 0; j < (unsigned int)cache_ops->associativity; ++j)
         {
