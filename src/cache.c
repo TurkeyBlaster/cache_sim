@@ -200,34 +200,34 @@ bool write(Cache *cache, CacheOptions *cache_ops, unsigned short address, char d
 void print_cache(Cache *cache, CacheOptions *cache_ops)
 {
     Set *set;
-    HashMap *line;
+    HashMap *lines;
     bool valid;
     for (unsigned int i = 0; i < (unsigned int)cache->num_sets; ++i)
     {
         set = &cache->sets[i];
+        lines = set->lines;
         printf("Set %u:\n", i);
         printf("I\tV\tD\tT\tData\n");
         for (unsigned int j = 0; j < (unsigned int)cache_ops->associativity; ++j)
         {
-            line = &set->lines[j];
-            valid = line->cell_attrs->flag & 0x2;
+            valid = (lines->cell_attrs[j].flag & 0x2);
             printf("%d\t%d\t", j, valid);
             if (valid)
             {
                 unsigned char tag;
                 if (cache_ops->replacement != 3)
                 {
-                    tag = ((Node **)set->lines->map)[j]->address;
+                    tag = ((Node **)lines->map)[j]->address;
                 }
                 else
                 {
-                    tag = ((short *)set->lines->map)[j];
+                    tag = ((short *)lines->map)[j];
                 }
                 tag >>= (cache->offset_size + cache->index_size);
-                printf("%d\t%d\t", line->cell_attrs->flag >> 2, tag);
+                printf("%d\t%d\t", lines->cell_attrs[j].flag >> 2, tag);
                 for (unsigned k = 0; k < cache_ops->block_size; ++k)
                 {
-                   printf("%#02X ", set->data[j * cache_ops->block_size + k]);
+                   printf("%#02hhx ", set->data[j * cache_ops->block_size + k]);
                 }
             }
             printf("\n");
@@ -238,31 +238,30 @@ void print_cache(Cache *cache, CacheOptions *cache_ops)
 void print_memory(Cache *cache, CacheOptions *cache_ops)
 {
     Set *set;
-    HashMap *line;
+    HashMap *lines;
     bool valid;
     for (unsigned int i = 0; i < (unsigned int)cache->num_sets; ++i)
     {
-        set = &cache->sets[i];
+        lines = &cache->sets[i].lines;
         printf("Set %u:\n", i);
         for (unsigned int j = 0; j < (unsigned int)cache_ops->associativity; ++j)
         {
-            line = &set->lines[j];
-            valid = line->cell_attrs->flag & 0x2;
+            valid = lines->cell_attrs->flag & 0x2;
             if (valid)
             {
                 unsigned char address;
                 if (cache_ops->replacement != 3)
                 {
-                    address = ((Node **)set->lines->map)[j]->address;
+                    address = ((Node **)lines->map)[j]->address;
                 }
                 else
                 {
-                    address = ((short *)set->lines->map)[j];
+                    address = ((short *)lines->map)[j];
                 }
                 printf("%#04X:\t", address);
                 for (unsigned k = 0; k < cache_ops->block_size; ++k)
                 {
-                   printf("%#02X ", memory[address + k]);
+                   printf("%#02hhx ", memory[address + k]);
                 }
             }
             printf("\n");

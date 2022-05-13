@@ -31,9 +31,9 @@ static bool valid_hex(unsigned short *number, unsigned char num_digits)
         {
             x = getchar();
             x_is_numeric = x >= '0' && x <= '9';
-            if (x_is_numeric || (x >= 'A' && x <= 'F'))
+            if (x_is_numeric || (x >= 'a' && x <= 'f'))
             {
-                x -= x_is_numeric ? '0' : '7'; // 'A' => ascii val. 65, 7 => ascii val. 55
+                x -= x_is_numeric ? '0' : 'W'; // 'a' => ascii val. 97, 'W' => ascii val. 87
                 x <<= (num_digits - i - 1) * 4;
                 *number += x;
             }
