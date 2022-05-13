@@ -50,15 +50,15 @@ void parse_args(CacheOptions *cache_options)
                  "Enter choice: ",
                  "Invalid choice, must be an integer between 0 and 2");
     validate_arg(&cache_options->write_back, NULL, 1,
-                 "Write back?\n"
-                 " 0 = false\n"
-                 " 1 = true\n"
+                 "Write-back?\n"
+                 " 0 = write-through\n"
+                 " 1 = write-back\n"
                  "Enter choice: ",
                  "Invalid choice, must be an integer between 0 and 1");
     validate_arg(&cache_options->write_allocate, NULL, 1,
-                 "Write allocate?\n"
-                 " 0 = false\n"
-                 " 1 = true\n"
+                 "Write-allocate?\n"
+                 " 0 = no write-allocate\n"
+                 " 1 = write-allocate\n"
                  "Enter choice: ",
                  "Invalid choice, must be an integer between 0 and 1");
     validate_arg(&cache_options->replacement, NULL, 2,

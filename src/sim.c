@@ -74,15 +74,21 @@ int main(int argc, char const *argv[])
         while (true)
         {
             // DEBUG: predefined cache options
-            cache_ops.address_width = 8;
-            cache_ops.cache_size = 32;
-            cache_ops.block_size = 8;
-            cache_ops.associativity = 2;
-            cache_ops.replacement = 0;
-            cache_ops.write_back = 1;
-            cache_ops.write_allocate = 1;
-            // parse_args(&cache_ops);
+            // cache_ops.address_width = 8;
+            // cache_ops.cache_size = 32;
+            // cache_ops.block_size = 8;
+            // cache_ops.associativity = 2;
+            // cache_ops.replacement = 0;
+            // cache_ops.write_back = 1;
+            // cache_ops.write_allocate = 1;
+            parse_args(&cache_ops);
             unsigned short address_limit = 0x1 << (cache_ops.address_width);
+            if ((cache_ops.cache_size >= address_limit) ||
+                (cache_ops.cache_size / cache_ops.block_size / cache_ops.associativity < 1))
+            {
+                printf("Invalid cache options");
+                goto beginning;
+            }
             memory = (char *)malloc(address_limit);
             cache = build_cache(&cache_ops, hash_int);
             exit_bool = false;

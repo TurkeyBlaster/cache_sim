@@ -244,7 +244,7 @@ void print_cache(Cache *cache, CacheOptions *cache_ops)
                 }
                 else
                 {
-                    printf('\t');
+                    printf("\t");
                 }
                 for (unsigned k = 0; k < cache_ops->block_size; ++k)
                 {
