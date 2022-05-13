@@ -28,7 +28,7 @@ bool hashmap_insert(HashMap *map, unsigned long elem, uint index, uint hash)
         return false;
     }
     memcpy((char *)map->map + map->cell_size * index, (char *)(&elem), map->cell_size);
-    map->cell_attrs[index].flag = 2;
+    map->cell_attrs[index].flag = 0x2; // Toggle valid bit, zero all other bits
     map->cell_attrs[index].hash = hash;
     ++map->size;
     return true;
@@ -36,7 +36,7 @@ bool hashmap_insert(HashMap *map, unsigned long elem, uint index, uint hash)
 
 void hashmap_remove(HashMap *map, uint index)
 {
-    map->cell_attrs[index].flag = 1;
+    map->cell_attrs[index].flag = 0x1; // Turn off all other flags, set delete flag to 1
 }
 
 bool hashmap_find(HashMap *map, uint hash, uint *index)
@@ -48,14 +48,14 @@ bool hashmap_find(HashMap *map, uint hash, uint *index)
     {
         if (map->cell_attrs[*index].flag)
         {
-            if (map->cell_attrs[*index].flag == 1 && !first_empty_set)
+            if (map->cell_attrs[*index].flag == 0x1 && !first_empty_set)
             {
                 first_empty_set = true;
                 first_empty = *index;
             }
             if (map->cell_attrs[*index].hash == hash)
             {
-                if (map->cell_attrs[*index].flag == 1) // TODO: MIGHT need to modify to match updated flags
+                if (map->cell_attrs[*index].flag == 0x1)
                 {
                     return false;
                 }

@@ -52,6 +52,7 @@ void move_to_end(DoublyLinkedList *ll, Node *node)
     }
     node->prev = ll->tail;
     node->next = ll->tail->next;
+    ll->tail->next = node;
     ll->tail = node;
 }
 void increase_order(DoublyLinkedList *ll, Node *node)

@@ -114,8 +114,11 @@ bool read(Cache *cache, CacheOptions *cache_ops, unsigned short address)
         hit_handler(set, cache_ops, index);
         return true;
     }
-    insert(set, cache_ops, masked_address, index, hash);
-    return false;
+    else
+    {
+        insert(set, cache_ops, masked_address, index, hash);
+        return false;
+    }
 }
 
 void insert(Set *set, CacheOptions *cache_ops, unsigned short address, uint index, uint hash)
@@ -151,6 +154,7 @@ void evict(Set *set, CacheOptions *cache_ops)
         address = line_to_evict->address;
         uint hash = set->lines->hash_algo((uint)address);
         hashmap_find(set->lines, hash, &index);
+        remove_head(set->order);
     }
     else // Random
     {
@@ -211,7 +215,7 @@ void print_cache(Cache *cache, CacheOptions *cache_ops)
         for (unsigned int j = 0; j < (unsigned int)cache_ops->associativity; ++j)
         {
             valid = (lines->cell_attrs[j].flag & 0x2);
-            printf("%d\t%d\t", j, valid);
+            printf("%d\t%d\t", i, valid);
             if (valid)
             {
                 unsigned char tag;
@@ -227,7 +231,7 @@ void print_cache(Cache *cache, CacheOptions *cache_ops)
                 printf("%d\t%d\t", lines->cell_attrs[j].flag >> 2, tag);
                 for (unsigned k = 0; k < cache_ops->block_size; ++k)
                 {
-                   printf("%#02hhx ", set->data[j * cache_ops->block_size + k]);
+                    printf("0x%02hhx ", set->data[j * cache_ops->block_size + k]);
                 }
             }
             printf("\n");
@@ -257,10 +261,10 @@ void print_memory(Cache *cache, CacheOptions *cache_ops)
                 {
                     address = ((short *)lines->map)[j];
                 }
-                printf("%#04X:\t", address);
+                printf("0x%04x:\t", address);
                 for (unsigned k = 0; k < cache_ops->block_size; ++k)
                 {
-                   printf("%#02hhx ", memory[address + k]);
+                    printf("0x%02hhx ", memory[address + k]);
                 }
             }
             printf("\n");

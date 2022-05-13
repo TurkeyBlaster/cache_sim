@@ -9,8 +9,8 @@ char *memory;
 static unsigned short address;
 static unsigned short data;
 static bool hit;
-static double hits = 0;
-static double misses = 0;
+static size_t hits = 0;
+static size_t misses = 0;
 static bool exit_bool;
 // Taken from https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
 // answer by Thomas Mueller
@@ -46,7 +46,7 @@ static bool valid_hex(unsigned short *number, unsigned char num_digits)
     }
     return false;
 }
-static inline void print_op_results(bool hit, double *hits, double *misses)
+static inline void print_op_results(bool hit, size_t *hits, size_t *misses)
 {
     if (hit)
     {
@@ -58,7 +58,10 @@ static inline void print_op_results(bool hit, double *hits, double *misses)
         ++(*misses);
         printf("Missed\n");
     }
-    printf("Miss Rate: %lf\n", (*hits > 0. && *misses > 0.) ? *hits / (*hits + *misses) : 0.);
+    printf("Hits: %lu\tMisses: %lu\nHit Rate: %lf\n",
+           *hits,
+           *misses,
+           (*hits > 0. && *misses > 0.) ? ((double)*hits) / (*hits + *misses) : 0.);
 }
 
 int main(int argc, char const *argv[])
@@ -130,13 +133,25 @@ int main(int argc, char const *argv[])
                         switch (getchar())
                         {
                         case 'C':
-                            print_cache(cache, &cache_ops);
+                            if (flush_istream(stdin))
+                            {
+                                print_cache(cache, &cache_ops);
+                            }
+                            else
+                            {
+                                goto invalid;
+                            }
                             break;
-
                         case 'M':
-                            print_memory(cache, &cache_ops);
+                            if (flush_istream(stdin))
+                            {
+                                print_memory(cache, &cache_ops);
+                            }
+                            else
+                            {
+                                goto invalid;
+                            }
                             break;
-
                         default:
                             goto invalid;
                         }
@@ -147,8 +162,8 @@ int main(int argc, char const *argv[])
                     break;
                 invalid:
                 default:
-                    printf("Invalid argument\n");
                     flush_istream(stdin);
+                    printf("Invalid argument\n");
                     break;
                 }
             }
