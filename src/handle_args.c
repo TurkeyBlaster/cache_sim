@@ -21,8 +21,8 @@ void parse_args(CacheOptions *cache_options)
                  " 0 = 4 bits\n"
                  " 1 = 6 bits\n"
                  " 2 = 8 bits\n"
-                 " 3 = 10 bits\n"
-                 " 4 = 12 bits\n"
+                 " 3 = 12 bits\n"
+                 " 4 = 16 bits\n"
                  "Enter choice: ",
                  "Invalid choice, must be an integer between 0 and 4");
     validate_arg(&cache_options->cache_size, CACHE_SIZES, 5,
@@ -50,15 +50,15 @@ void parse_args(CacheOptions *cache_options)
                  "Enter choice: ",
                  "Invalid choice, must be an integer between 0 and 2");
     validate_arg(&cache_options->write_back, NULL, 1,
-                 "Write-back?\n"
-                 " 0 = write-through\n"
-                 " 1 = write-back\n"
+                 "Write Hit:\n"
+                 " 0 = Write-through\n"
+                 " 1 = Write-back\n"
                  "Enter choice: ",
                  "Invalid choice, must be an integer between 0 and 1");
     validate_arg(&cache_options->write_allocate, NULL, 1,
-                 "Write-allocate?\n"
-                 " 0 = no write-allocate\n"
-                 " 1 = write-allocate\n"
+                 "Write Miss:\n"
+                 " 0 = No Write-allocate\n"
+                 " 1 = Write-allocate\n"
                  "Enter choice: ",
                  "Invalid choice, must be an integer between 0 and 1");
     validate_arg(&cache_options->replacement, NULL, 2,

@@ -96,7 +96,7 @@ int main(int argc, char const *argv[])
             {
                 address = data = 0;
                 printf("Enter a command\n"
-                       " W <addr.> <0xDD> : write data 0xDD to cache at address <addr.>\n"
+                       " W <addr.> <0xdd> : write data 0xDD to cache at address <addr.>\n"
                        " R <addr.> : read from cache at address <addr.>\n"
                        " P C|M : print the cache (C) or relevant bytes in memory (M)\n"
                        " Q : quit\n"

@@ -8,7 +8,6 @@ const unsigned char ADDRESS_WIDTHS[] = {
     4,
     6,
     8,
-    10,
     12,
     16};
 const unsigned char CACHE_SIZES[] = {
