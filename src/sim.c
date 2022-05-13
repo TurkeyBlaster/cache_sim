@@ -25,7 +25,7 @@ static bool valid_hex(unsigned short *number, unsigned char num_digits)
 {
     if (getchar() == '0' && getchar() == 'x')
     {
-        char x;
+        short x;
         bool x_is_numeric;
         for (unsigned char i = 0; i < num_digits; ++i)
         {
@@ -123,6 +123,7 @@ int main(int argc, char const *argv[])
                     {
                         goto invalid;
                     }
+                    break;
                 case 'P':
                     if (getchar() == ' ')
                     {

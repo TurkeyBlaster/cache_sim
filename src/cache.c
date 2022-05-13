@@ -29,7 +29,7 @@ static inline void hit_handler(Set *set, CacheOptions *cache_ops, uint index)
 {
     if (!(cache_ops->replacement & 0x2)) // LRU, LFU
     {
-        Node *node = (Node *)(((long *)set->lines->map)[index]);
+        Node *node = ((Node **)(set->lines->map))[index];
         if (cache_ops->replacement) // LFU
         {
             ++(node->count);
@@ -114,7 +114,7 @@ bool read(Cache *cache, CacheOptions *cache_ops, unsigned short address)
         hit_handler(set, cache_ops, index);
         return true;
     }
-    insert(set, cache_ops, address, index, hash);
+    insert(set, cache_ops, masked_address, index, hash);
     return false;
 }
 
@@ -175,7 +175,7 @@ bool write(Cache *cache, CacheOptions *cache_ops, unsigned short address, char d
     if (hashmap_find(set->lines, hash, &index))
     {
         hit_handler(set, cache_ops, index);
-        set->data[offset] = data;
+        set->data[cache_ops->block_size * index + offset] = data;
         if (cache_ops->write_back)
         {
             set->lines->cell_attrs[index].flag |= 0x4; // Toggle dirty bit on
@@ -211,7 +211,7 @@ void print_cache(Cache *cache, CacheOptions *cache_ops)
         {
             line = &set->lines[j];
             valid = line->cell_attrs->flag & 0x2;
-            printf("%d\t%d\t%d\t", j, valid);
+            printf("%d\t%d\t", j, valid);
             if (valid)
             {
                 unsigned char tag;
