@@ -9,7 +9,8 @@ const unsigned char ADDRESS_WIDTHS[] = {
     6,
     8,
     10,
-    12};
+    12,
+    16};
 const unsigned char CACHE_SIZES[] = {
     8,
     16,
@@ -74,14 +75,22 @@ Cache *build_cache(CacheOptions *cache_ops, uint (*hash_algo)(uint elem))
     }
     --cache->offset_mask;
     _size = cache->num_sets;
-    cache->index_mask = 0x1;
     cache->index_size = 0;
-    while (_size >>= 1)
+    if (cache->num_sets > 1)
     {
-        cache->index_mask <<= 1;
-        ++cache->index_size;
+        cache->index_mask = 0x1;
+        while (_size >>= 1)
+        {
+            cache->index_mask <<= 1;
+            ++cache->index_size;
+        }
+        --cache->index_mask;
     }
-    --cache->index_mask;
+    else
+    {
+        cache->index_mask = 0x0;
+    }
+    cache->has_tag = (cache->offset_size + cache->index_size) < cache_ops->address_width;
     return cache;
 }
 
@@ -218,17 +227,25 @@ void print_cache(Cache *cache, CacheOptions *cache_ops)
             printf("%d\t%d\t", i, valid);
             if (valid)
             {
-                unsigned char tag;
-                if (cache_ops->replacement != 3)
+                printf("%d\t", lines->cell_attrs[j].flag >> 2);
+                if (cache->has_tag)
                 {
-                    tag = ((Node **)lines->map)[j]->address;
+                    unsigned char tag;
+                    if (cache_ops->replacement != 3)
+                    {
+                        tag = ((Node **)lines->map)[j]->address;
+                    }
+                    else
+                    {
+                        tag = ((short *)lines->map)[j];
+                    }
+                    tag >>= (cache->offset_size + cache->index_size);
+                    printf("%d\t", tag);
                 }
                 else
                 {
-                    tag = ((short *)lines->map)[j];
+                    printf('\t');
                 }
-                tag >>= (cache->offset_size + cache->index_size);
-                printf("%d\t%d\t", lines->cell_attrs[j].flag >> 2, tag);
                 for (unsigned k = 0; k < cache_ops->block_size; ++k)
                 {
                     printf("0x%02hhx ", set->data[j * cache_ops->block_size + k]);

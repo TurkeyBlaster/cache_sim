@@ -37,6 +37,7 @@ typedef struct Cache
     char index_mask;
     unsigned char index_size;
     unsigned char num_sets;
+    bool has_tag;
 } Cache;
 
 Cache *build_cache(CacheOptions *cache_ops, uint (*hash_algo)(uint elem));
