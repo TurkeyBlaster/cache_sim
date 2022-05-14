@@ -6,7 +6,7 @@ This is a cache simulator I made in C.
 
 The cache simulator will simulate a cache according to options chosen by the user,
 as well as simulating reading from and writing to the cache. The cache simulator
-borrows heavily from the feature set of [UW's cache simulator](!https://courses.cs.washington.edu/courses/cse351/cachesim/). This includes:
+borrows heavily from the feature set of [UW's cache simulator](https://courses.cs.washington.edu/courses/cse351/cachesim/). This includes:
 
 * Different Address Widths (in bits)
     1. 4
